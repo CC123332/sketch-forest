@@ -74,7 +74,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     document.addEventListener("mousemove", onMouseMove);
     renderer.domElement.addEventListener("click", onClick);
 
-    const movementSpeed = 0.1;
+    const movementSpeed = 0.02;
 
     const bgLoader = new THREE.TextureLoader();
     bgLoader.load('background.png', (texture) => {
@@ -163,8 +163,11 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
 
         if (direction.lengthSq() > 0) {
           direction.normalize();
+
           const move = new THREE.Vector3(direction.x, 0, direction.z).applyEuler(camera.rotation);
           camera.position.add(move.multiplyScalar(movementSpeed));
+
+          camera.position.y = 1;
         }
       } else {
         controls?.update();
