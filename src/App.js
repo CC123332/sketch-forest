@@ -9,6 +9,8 @@ export default function App() {
   const [eraseFlowerEnabled, setEraseFlowerEnabled] = useState(false);
   const [changeSizeEnabled, setChangeSizeEnabled] = useState(false);
   const [selectedFlower, setSelectedFlower] = useState(null);
+  const [wasdMode, setWasdMode] = useState(false);
+
 
   const handleToggleAdd = () => {
     setAddFlowerEnabled((prev) => !prev);
@@ -84,6 +86,21 @@ export default function App() {
         >
           {changeSizeEnabled ? "Disable Change Size" : "Enable Change Size"}
         </button>
+
+        <button
+          onClick={() => setWasdMode(prev => !prev)}
+          style={{
+            padding: "10px",
+            margin: "10px",
+            fontSize: "16px",
+            background: wasdMode ? "#FF6666" : "white",
+            border: "2px solid black",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          {wasdMode ? "Disable WASD Mode" : "Enable WASD Mode"}
+        </button>
       </div>
 
       {addFlowerEnabled && <DrawingTool onSave={setImage} />}
@@ -147,6 +164,7 @@ export default function App() {
         eraseFlowerEnabled={eraseFlowerEnabled}
         changeSizeEnabled={changeSizeEnabled}
         onSelectFlower={setSelectedFlower}
+        wasdMode={wasdMode}
       />
     </div>
   );
