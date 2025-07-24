@@ -225,117 +225,96 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     };
   }, [wasdMode]);
 
-  // Handle mouse movement for hover effect
-  const handleMouseMove = (event) => {
-    if ((!addFlowerEnabled && !eraseFlowerEnabled) || !sceneRef.current || !cameraRef.current || !floorRef.current || !hoverCircleRef.current) return;
-
-    const mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, cameraRef.current);
-
-    const intersects = raycaster.intersectObject(floorRef.current);
-    if (intersects.length > 0) {
-      const { x, z } = intersects[0].point;
-      hoverCircleRef.current.position.set(x, 0.02, z);
-      hoverCircleRef.current.visible = true;
-    } else {
-      hoverCircleRef.current.visible = false;
-    }
-  };
-
-  // Function to add a flower at clicked position
-  const addFlowerAtClick = (event) => {
-    if (!addFlowerEnabled) return;
-    const mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, cameraRef.current);
-
-    const intersects = raycaster.intersectObject(floorRef.current);
-    if (intersects.length > 0) {
-      const { x, z } = intersects[0].point;
-      const newFlower = new Flowers(userImage, x, z);
-
-      flowersRef.current.push(newFlower);
-      sceneRef.current.add(newFlower);
-    }
-  };
-
-  // Function to erase flowers within 0.1 radius
-  const eraseFlowerAtClick = (event) => {
-    if (!sceneRef.current || !cameraRef.current || !floorRef.current) return;
-  
-    const mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, cameraRef.current);
-  
-    const intersects = raycaster.intersectObject(floorRef.current);
-    if (intersects.length > 0) {
-      const { x, z } = intersects[0].point;
-  
-      // Filter out flowers that are within 0.1 radius and remove from scene
-      const remainingFlowers = [];
-      flowersRef.current.forEach((flower) => {
-        const flowerPos = flower.flowers[0].position;
-        const dist = Math.hypot(flowerPos.x - x, flowerPos.z - z);
-  
-        if (dist < 0.1) {
-          // Remove from scene
-          sceneRef.current.remove(flower);
-        } else {
-          remainingFlowers.push(flower);
-        }
-      });
-      flowersRef.current = remainingFlowers;
-    }
-  };
-
-  const handleSelectFlower = (event) => {
-    if (!changeSizeEnabled) return;
-  
-    const mouse = new THREE.Vector2();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(mouse, cameraRef.current);
-  
-    const intersected = raycaster.intersectObjects(flowersRef.current.map(f => f.flowers[0]));
-    if (intersected.length > 0) {
-      const flowerMesh = intersected[0].object;
-      const flower = flowersRef.current.find(f => f.flowers[0] === flowerMesh);
-  
-      // First, reset all borders
-      flowersRef.current.forEach(f => f.setSelected(false));
-  
-      if (flower) {
-        flower.setSelected(true); // activate border on selected flower
-        onSelectFlower({
-          ref: flower,
-          scale: flowerMesh.scale.x,
-          rotation: THREE.MathUtils.radToDeg(flowerMesh.rotation.y),
-          setScale: (newScale) => {
-            flower.flowers.forEach((mesh) => mesh.scale.set(newScale, newScale, newScale));
-          },
-          setRotation: (degrees) => {
-            const radians = THREE.MathUtils.degToRad(degrees);
-            flower.flowers.forEach((mesh) => mesh.rotation.y = radians);
-          }
-        });
-      }
-    }
-  };   
-
   // Setup event listeners based on modes
   useEffect(() => {
+    // Function to add a flower at clicked position
+    const addFlowerAtClick = (event) => {
+      if (!addFlowerEnabled) return;
+      const mouse = new THREE.Vector2();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, cameraRef.current);
+
+      const intersects = raycaster.intersectObject(floorRef.current);
+      if (intersects.length > 0) {
+        const { x, z } = intersects[0].point;
+        const newFlower = new Flowers(userImage, x, z);
+
+        flowersRef.current.push(newFlower);
+        sceneRef.current.add(newFlower);
+      }
+    };
+
+    // Function to erase flowers within 0.1 radius
+    const eraseFlowerAtClick = (event) => {
+      if (!sceneRef.current || !cameraRef.current || !floorRef.current) return;
+    
+      const mouse = new THREE.Vector2();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, cameraRef.current);
+    
+      const intersects = raycaster.intersectObject(floorRef.current);
+      if (intersects.length > 0) {
+        const { x, z } = intersects[0].point;
+    
+        // Filter out flowers that are within 0.1 radius and remove from scene
+        const remainingFlowers = [];
+        flowersRef.current.forEach((flower) => {
+          const flowerPos = flower.flowers[0].position;
+          const dist = Math.hypot(flowerPos.x - x, flowerPos.z - z);
+    
+          if (dist < 0.1) {
+            // Remove from scene
+            sceneRef.current.remove(flower);
+          } else {
+            remainingFlowers.push(flower);
+          }
+        });
+        flowersRef.current = remainingFlowers;
+      }
+    };
+
+    const handleSelectFlower = (event) => {
+      if (!changeSizeEnabled) return;
+    
+      const mouse = new THREE.Vector2();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, cameraRef.current);
+    
+      const intersected = raycaster.intersectObjects(flowersRef.current.map(f => f.flowers[0]));
+      if (intersected.length > 0) {
+        const flowerMesh = intersected[0].object;
+        const flower = flowersRef.current.find(f => f.flowers[0] === flowerMesh);
+    
+        // First, reset all borders
+        flowersRef.current.forEach(f => f.setSelected(false));
+    
+        if (flower) {
+          flower.setSelected(true); // activate border on selected flower
+          onSelectFlower({
+            ref: flower,
+            scale: flowerMesh.scale.x,
+            rotation: THREE.MathUtils.radToDeg(flowerMesh.rotation.y),
+            setScale: (newScale) => {
+              flower.flowers.forEach((mesh) => mesh.scale.set(newScale, newScale, newScale));
+            },
+            setRotation: (degrees) => {
+              const radians = THREE.MathUtils.degToRad(degrees);
+              flower.flowers.forEach((mesh) => mesh.rotation.y = radians);
+            }
+          });
+        }
+      }
+    };
+
     const handleClick = (e) => {
       if (addFlowerEnabled) {
         addFlowerAtClick(e);
@@ -363,7 +342,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("click", handleClick);
     };
-  }, [addFlowerAtClick, handleMouseMove, handleSelectFlower, addFlowerEnabled, eraseFlowerEnabled, changeSizeEnabled, userImage]);
+  }, [addFlowerEnabled, eraseFlowerEnabled, changeSizeEnabled, userImage]);
 
   return null;
 };
