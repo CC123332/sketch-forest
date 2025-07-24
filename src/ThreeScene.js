@@ -363,7 +363,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("click", handleClick);
     };
-  }, [addFlowerEnabled, eraseFlowerEnabled, changeSizeEnabled, userImage]);
+  }, [addFlowerAtClick, handleMouseMove, handleSelectFlower, addFlowerEnabled, eraseFlowerEnabled, changeSizeEnabled, userImage]);
 
   return null;
 };
