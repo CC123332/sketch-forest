@@ -315,6 +315,27 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
       }
     };
 
+    // Handle mouse movement for hover effect
+    const handleMouseMove = (event) => {
+      if ((!addFlowerEnabled && !eraseFlowerEnabled) || !sceneRef.current || !cameraRef.current || !floorRef.current || !hoverCircleRef.current) return;
+
+      const mouse = new THREE.Vector2();
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, cameraRef.current);
+
+      const intersects = raycaster.intersectObject(floorRef.current);
+      if (intersects.length > 0) {
+        const { x, z } = intersects[0].point;
+        hoverCircleRef.current.position.set(x, 0.02, z);
+        hoverCircleRef.current.visible = true;
+      } else {
+        hoverCircleRef.current.visible = false;
+      }
+    };
+
     const handleClick = (e) => {
       if (addFlowerEnabled) {
         addFlowerAtClick(e);
