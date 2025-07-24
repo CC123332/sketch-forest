@@ -39,6 +39,10 @@ export default function App() {
     }
   };
 
+  const handleSelectFlower = useCallback((flower) => {
+    setSelectedFlower(flower);
+  }, []);
+
   return (
     <div>
       <div style={{ display: 'flex', position: "absolute", top: "5px", right: "10px" }}>
@@ -163,7 +167,7 @@ export default function App() {
         addFlowerEnabled={addFlowerEnabled}
         eraseFlowerEnabled={eraseFlowerEnabled}
         changeSizeEnabled={changeSizeEnabled}
-        onSelectFlower={setSelectedFlower}
+        onSelectFlower={handleSelectFlower}
         wasdMode={wasdMode}
       />
     </div>
