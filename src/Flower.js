@@ -3,7 +3,7 @@ import * as THREE from "three";
 const FLOWER_SIZE = 0.4;
 
 class Flowers extends THREE.Group {
-  constructor(userImage, xPos, zPos) {
+  constructor(userImage, xPos, yPos, zPos) {
     super();
     this.flowers = [];
     this.selected = false;
@@ -70,7 +70,7 @@ class Flowers extends THREE.Group {
       geometry.translate(0, (FLOWER_SIZE / imageAspectRatio) / 2, 0);
 
       const flower = new THREE.Mesh(geometry, material);
-      flower.position.set(xPos, 0.0, zPos);
+      flower.position.set(xPos, yPos, zPos);
       flower.initialPosition = flower.position.clone();
       flower.rotation.y = Math.random() * Math.PI;
 

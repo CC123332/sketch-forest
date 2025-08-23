@@ -70,3 +70,8 @@ body {
 .fade-in-left {
   animation: fadeInLeftToRight 0.3s ease-out forwards;
 }
+
+body {
+  background-image: url('./background2.png');
+  background-repeat: repeat;
+}
