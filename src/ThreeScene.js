@@ -24,7 +24,6 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
 
 const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSizeEnabled, onSelectFlower, wasdMode }) => {
-  let composer, effectFXAA, outlinePass;
 
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -42,6 +41,10 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     velocity: new THREE.Vector3(0, 0, 0),
     onGround: false
   });
+
+  const composerRef = useRef(null);
+  const effectFXAARef = useRef(null);
+  const outlinePassRef = useRef(null);
 
 
   useEffect(() => {
@@ -62,18 +65,18 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     document.body.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    composer = new EffectComposer( renderer );
+    composerRef.current = new EffectComposer( renderer );
 
     const renderPass = new RenderPass( scene, camera );
-    composer.addPass( renderPass );
+    composerRef.current.addPass( renderPass );
 
-    outlinePass = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
-    outlinePass.visibleEdgeColor.set(0x000000);
-    composer.addPass( outlinePass );
+    outlinePassRef.current = new OutlinePass( new THREE.Vector2( window.innerWidth, window.innerHeight ), scene, camera );
+    outlinePassRef.current.visibleEdgeColor.set(0x000000);
+    composerRef.current.addPass( outlinePassRef.current );
 
-    effectFXAA = new ShaderPass( FXAAShader );
-    effectFXAA.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
-    composer.addPass( effectFXAA );
+    effectFXAARef.current = new ShaderPass( FXAAShader );
+    effectFXAARef.current.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+    composerRef.current.addPass( effectFXAARef.current );
 
     let controls;
     if (!wasdMode) {
@@ -114,8 +117,6 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     document.addEventListener("mousemove", onMouseMove);
     renderer.domElement.addEventListener("click", onClick);
 
-    const movementSpeed = 0.02;
-
     const gltfloader = new GLTFLoader();
     // Load noise texture
     const noiseTexture = new THREE.TextureLoader().load(noiseTexturePath);
@@ -124,7 +125,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     noiseTexture.minFilter = THREE.NearestFilter; // keep sharp
     noiseTexture.magFilter = THREE.NearestFilter; // keep sharp
     gltfloader.load(modelPath, (gltf) => {
-      outlinePass.selectedObjects.push(gltf.scene);
+      outlinePassRef.current.selectedObjects.push(gltf.scene);
       gltf.scene.traverse((child) => {
           if (child.isMesh) {
               const originalMap = child.material.map;
@@ -274,7 +275,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
         } 
 
         targetArr.push({ cloud, angle, y });
-        outlinePass.selectedObjects.push(cloud);
+        outlinePassRef.current.selectedObjects.push(cloud);
         scene.add(cloud);
       });
     }
@@ -431,7 +432,7 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
       flowersRef.current.forEach((flower) => flower.update(time));
 
       renderer.render(scene, camera);
-      composer.render();
+      composerRef.current.render();
     };
     animate();
 
