@@ -58,6 +58,8 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(6, 2, 10);
     camera.lookAt(0, 0, 1);
+    camera.near = 0.01;
+    camera.updateProjectionMatrix();
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -330,6 +332,35 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
       return { point: hit.point, normal };
     }
 
+    // near your other consts
+    const PLAYER_RADIUS = 0.25;   // ~shoulder radius in meters
+    const FLOWER_RADIUS = 0.22;   // half-width of your flower quad (approx)
+
+    // call this before snapping to ground, right after you compute nextPos
+    function resolveFlowerCollisions(nextPos) {
+      if (!flowersRef.current) return;
+
+      const tmp = new THREE.Vector3();
+      for (const f of flowersRef.current) {
+        if (!f?.flowers?.length) continue;
+        const mesh = f.flowers[0];
+        mesh.getWorldPosition(tmp);
+
+        // horizontal collision only
+        const dx = nextPos.x - tmp.x;
+        const dz = nextPos.z - tmp.z;
+        const distSq = dx*dx + dz*dz;
+        const minDist = PLAYER_RADIUS + FLOWER_RADIUS;
+        if (distSq < minDist*minDist) {
+          const dist = Math.sqrt(distSq) || 1e-6;
+          const push = (minDist - dist) + 1e-3;
+          nextPos.x += (dx / dist) * push;
+          nextPos.z += (dz / dist) * push;
+        }
+      }
+    }
+
+
     // Animation loop
     const animate = (time) => {
       requestAnimationFrame(animate);
@@ -358,6 +389,8 @@ const ThreeScene = ({ userImage, addFlowerEnabled, eraseFlowerEnabled, changeSiz
         const player = playerRef.current;
         const horizontalMove = wishDir.multiplyScalar(MOVE_SPEED * dt);
         const nextPos = camera.position.clone().add(horizontalMove);
+        
+        // resolveFlowerCollisions(nextPos);
 
         if (!player.onGround) player.velocity.y -= GRAVITY * dt;
         nextPos.y += player.velocity.y * dt;
